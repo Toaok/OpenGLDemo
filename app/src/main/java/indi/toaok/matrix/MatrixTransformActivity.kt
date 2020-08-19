@@ -16,6 +16,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import kotlin.math.PI
 import kotlin.math.floor
+import kotlin.math.min
 import kotlin.math.sqrt
 
 
@@ -85,7 +86,8 @@ class MatrixTransformActivity : AppCompatActivity() {
         private var strokeWidth = 2f
         private val gridNumX = 10
         private val gridNumY = 10
-        private val unitSize = dp2px(40f)
+
+        private var unitSize = dp2px(40f)
 
         //选中的矩形
         private var xIndex = -1
@@ -100,7 +102,7 @@ class MatrixTransformActivity : AppCompatActivity() {
             attributeSet,
             defStyleAttr
         ) {
-            init()
+//            init()
         }
 
         private fun init() {
@@ -133,6 +135,12 @@ class MatrixTransformActivity : AppCompatActivity() {
 
         }
 
+        override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
+            super.onLayout(changed, left, top, right, bottom)
+            unitSize = min(width, height) / 2f / (min(gridNumX,gridNumY)+1)
+            init()
+        }
+
         override fun onDraw(canvas: Canvas?) {
             super.onDraw(canvas)
             onDrawTile(canvas)
@@ -162,9 +170,9 @@ class MatrixTransformActivity : AppCompatActivity() {
                     path.close()
 
                     canvas?.drawPath(path, linePaint)
-                    fillPaint.color = if (i==xIndex&&y==yIndex){
+                    fillPaint.color = if (i == xIndex && y == yIndex) {
                         fillSelectStyle.toInt()
-                    }else{
+                    } else {
                         fillStyle.toInt()
                     }
                     canvas?.drawPath(path, fillPaint)
