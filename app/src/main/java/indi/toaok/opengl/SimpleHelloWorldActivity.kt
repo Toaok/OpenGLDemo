@@ -9,11 +9,6 @@ import java.nio.ByteOrder
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 
-/**
- *
- * @author user
- * @version 1.0  2020/8/17.
- */
 class SimpleHelloWorldActivity : AppCompatActivity() {
 
     private lateinit var glSurfaceView: GLSurfaceView
@@ -83,7 +78,7 @@ class SimpleHelloWorldActivity : AppCompatActivity() {
             //设置视口
             GLES20.glViewport(0,0,glSurfaceViewWidth,glSurfaceViewHeight)
             //调用draw方法用TRIANGLES的方式执行渲染，顶点数量为3个
-            GLES20.glDrawArrays(GLES20.GL_TRIANGLES,0,3)
+            GLES20.glDrawArrays(GLES20.GL_TRIANGLES,0,6)
         }
 
         override fun onSurfaceChanged(gl: GL10?, width: Int, height: Int) {
@@ -106,7 +101,7 @@ class SimpleHelloWorldActivity : AppCompatActivity() {
             //使用GL程序
             GLES20.glUseProgram(programId)
             //三角形顶点数据
-            val vertexData= floatArrayOf(0f,0.5f,-0.5f,-0.5f,0.5f,-0.5f)
+            val vertexData= floatArrayOf(-1f,0.5f,-0.5f,1f,0f,0f,0f,0f,0.5f,-1f,1f,-0.5f)
             //将顶点数据方如buffer中
             val buffer=ByteBuffer.allocateDirect(vertexData.size*java.lang.Float.SIZE)
                 .order(ByteOrder.nativeOrder())

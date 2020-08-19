@@ -1,13 +1,15 @@
-package indi.toaok.opengl
+package indi.toaok
 
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.view.View
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.chad.library.adapter.base.BaseQuickAdapter
 import com.chad.library.adapter.base.viewholder.BaseViewHolder
+import indi.toaok.matrix.MatrixTransformActivity
+import indi.toaok.opengl.R
+import indi.toaok.opengl.SimpleHelloWorldActivity
 import indi.toaok.opengl.vo.ItemMainBean
 
 class MainActivity : AppCompatActivity() {
@@ -43,7 +45,10 @@ class MainActivity : AppCompatActivity() {
                 layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
             }
             if (adapter == null) {
-                adapter = Adapter(R.layout.item_main_list, recyclerData)
+                adapter = Adapter(
+                    R.layout.item_main_list,
+                    recyclerData
+                )
             }
             recyclerView.layoutManager = layoutManager
             recyclerView.adapter = adapter
@@ -52,7 +57,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initData() {
-        recyclerData.add(ItemMainBean("SimpleHelloWord",SimpleHelloWorldActivity::class.java))
+        recyclerData.add(ItemMainBean("SimpleHelloWord",
+            SimpleHelloWorldActivity::class.java))
+        recyclerData.add(ItemMainBean("MatrixTransform",
+            MatrixTransformActivity::class.java))
     }
 
     private fun initEvent() {
