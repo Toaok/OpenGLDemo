@@ -35,6 +35,10 @@ class Matrix(
     }
 
 
+    /**
+     * 当前矩阵对一个点进行转换，并返回新的点对象
+     * @param p 点对象
+     */
     fun transfromPoint(p: Point): Point {
         val newPoint = Point()
         newPoint.x = this.a * p.x + this.c * p.y + this.tx
@@ -42,6 +46,26 @@ class Matrix(
         return newPoint
     }
 
+    /**
+     * 进行求逆运算，会修改当前矩阵的数据
+     *
+     */
+    fun invert(): Matrix {
+        val a = this.a
+        val b = this.b
+        val c = this.c
+        val d = this.d
+        val tx = this.tx
+        val ty = this.ty
+        val D = a * d - b * c
+        this.a = d / D
+        this.b = -b / D
+        this.c = -c / D
+        this.d = a / D
+        this.tx = (c * ty - d * tx) / D
+        this.ty = (b * tx - a * ty) / D
+        return this
+    }
 
     /**
      * 从指定矩阵中复制数据
