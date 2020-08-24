@@ -47,8 +47,6 @@ class MatrixTransformActivity : AppCompatActivity() {
 
     private fun initWidget() {
         gridView = GridView(this)
-//        testView= TextView(this)
-//        testView.text = "Hello World!"
         setContentView(
             gridView,
             ViewGroup.LayoutParams(
@@ -56,6 +54,10 @@ class MatrixTransformActivity : AppCompatActivity() {
                 ViewGroup.LayoutParams.MATCH_PARENT
             )
         )
+        window.decorView.post {
+            Log.i(TAG, "WidthxHeight:${window.decorView.width}x${window.decorView.height}")
+        }
+
     }
 
 
@@ -93,6 +95,10 @@ class MatrixTransformActivity : AppCompatActivity() {
         //选中的矩形
         private var xIndex = -1
         private var yIndex = -1
+
+        //变换矩阵
+        private val baseX = Vector2D(0.87f, 0.5f)//ex基向量
+        private val baseY = Vector2D(-0.32f, 0.94f)//ey基向量
 
         constructor(context: Context?) : this(context, null)
 
@@ -136,14 +142,10 @@ class MatrixTransformActivity : AppCompatActivity() {
 
         override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
             super.onLayout(changed, left, top, right, bottom)
-            unitSize = if (width / 2f < height) {
-                (width / 2f) / (min(
-                    gridNumX,
-                    gridNumY
-                ) + 1)
-            } else {
-                height.toFloat() / (min(gridNumX, gridNumY) + 1)
-            }
+            val unitWidth = abs(baseX.x) + abs(baseY.x)
+            val unitHeight = abs(baseX.y) + abs(baseY.y)
+            unitSize =
+                min(width / (unitWidth * (gridNumX + 1)), height / (unitHeight * (gridNumX + 1)))
         }
 
         override fun onDraw(canvas: Canvas) {
@@ -152,26 +154,24 @@ class MatrixTransformActivity : AppCompatActivity() {
         }
 
         private fun onDrawTile(canvas: Canvas) {
-            //变换矩阵
-            val baseX = Vector2D(0.87f, 0.5f)//ex基向量
-            val baseY = Vector2D(-0.32f, 0.94f)//ey基向量
-            //缩放，使其宽高小于可视区域的宽高
-            val scale = min(1 / baseX.add(baseY).x, 1 / baseX.add(baseY).y)
-
-            val cosθ = baseX.dot(baseY) / baseX.length * baseY.length
-            val sinθ = sqrt(1 - cosθ * cosθ)
-            val pathWidth = (baseX.length*cosθ+baseY.length*sinθ) * unitSize * (gridNumX + 1)
-            val transX = (width-pathWidth)/2f+baseX.length*cosθ*unitSize* (gridNumX + 1)
+            //绘制区域的宽高(外切矩形)
+            val pathWidth =
+                abs(baseX.x) * (gridNumX + 1) * unitSize + abs(baseY.x) * (gridNumY + 1) * unitSize
+            val pathHeight =
+                abs(baseX.y) * (gridNumX + 1) * unitSize + abs(baseY.y) * (gridNumY + 1) * unitSize
+            //计算移动到屏幕中央需要的距离
+            var transX = width / 2 - pathWidth / 2
+            if (baseX.x < 0) {
+                transX += abs(baseX.x * unitSize * (gridNumX + 1))
+            }
+            if (baseY.x < 0) {
+                transX += abs(baseY.x * unitSize * (gridNumY + 1))
+            }
+            //矩阵变换
             matrix = Matrix(
                 a = baseX.x, b = baseX.y, tx = transX,
                 c = baseY.x, d = baseY.y, ty = 0f
             )
-            Log.i(TAG, "width:$width")
-            Log.i(TAG, "pathWidth:$pathWidth")
-            Log.i(TAG, "transX:$transX")
-            if (width > height) {
-                matrix.scale(scale, scale)
-            }
             for (i in 0..gridNumX) {
                 for (y in 0..gridNumY) {
                     val px = i * unitSize
