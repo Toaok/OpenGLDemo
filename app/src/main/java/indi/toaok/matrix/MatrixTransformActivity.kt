@@ -1,7 +1,6 @@
 package indi.toaok.matrix
 
 import android.content.Context
-import android.content.res.Configuration
 import android.graphics.*
 import android.os.Bundle
 import android.text.TextPaint
@@ -12,9 +11,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ComponentActivity.ExtraData
-import androidx.core.content.ContextCompat.getSystemService
-import android.icu.lang.UCharacter.GraphemeClusterBreak.T
 import kotlin.math.*
 
 
@@ -26,9 +22,6 @@ import kotlin.math.*
 class MatrixTransformActivity : AppCompatActivity() {
 
     private val TAG = "MatrixTransform"
-
-    private lateinit var gridView: GridView
-    private lateinit var testView: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,9 +39,18 @@ class MatrixTransformActivity : AppCompatActivity() {
     }
 
     private fun initWidget() {
-        gridView = GridView(this)
+//        val gridView = GridView(this)
+//        setContentView(
+//            gridView,
+//            ViewGroup.LayoutParams(
+//                ViewGroup.LayoutParams.MATCH_PARENT,
+//                ViewGroup.LayoutParams.MATCH_PARENT
+//            )
+//        )
+
+        val bezierCurveView = BezierCurveView(this)
         setContentView(
-            gridView,
+            bezierCurveView,
             ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT
@@ -129,7 +131,7 @@ class MatrixTransformActivity : AppCompatActivity() {
 
             textPaint = TextPaint()
             textPaint.isAntiAlias = true
-            textPaint.strokeWidth = dp2px(strokeWidth)
+            //textPaint.strokeWidth = dp2px(strokeWidth)
             textPaint.color = textStyle.toInt()
 
             rectPaint = Paint()
@@ -204,7 +206,6 @@ class MatrixTransformActivity : AppCompatActivity() {
                     }
                     canvas.drawPath(path, fillPaint)
 
-
                     val text = "$i,$y"
                     val textRect = Rect()
                     textPaint.getTextBounds(text, 0, text.length, textRect)
@@ -220,10 +221,6 @@ class MatrixTransformActivity : AppCompatActivity() {
             }
         }
 
-        private fun dp2px(dpValue: Float): Float {
-            val scale = context.resources.displayMetrics.density
-            return dpValue * scale + 0.5f
-        }
 
         override fun onTouchEvent(event: MotionEvent?): Boolean {
             val x = event?.x ?: -1f
@@ -235,38 +232,155 @@ class MatrixTransformActivity : AppCompatActivity() {
             yIndex = floor(pointInvert.y / unitSize).toInt()
             Log.i("Invert Point", "$xIndex,$yIndex")
             if (xIndex in 0..gridNumX && yIndex in 0..gridNumY) {
-
                 invalidate()
             }
             return super.onTouchEvent(event)
         }
 
-        /**
-         * 求最小值
-         * @param valus 传入的参数，多个
-         * @return
-         */
-        fun min(vararg values: Float): Float {
-            var min: Float = Float.MAX_VALUE
-            for (d in values) {
-                if (d < min) min = d
-            }
-            return min
-        }
 
-        /**
-         * 求最大值
-         * @param valus 传入的参数，多个
-         * @return
-         */
-        fun max(vararg values: Float): Float {
-            var min: Float = Float.MIN_VALUE
-            for (d in values) {
-                if (d > min) min = d
-            }
-            return min
-        }
     }
 
 
+    class BezierCurveView : View {
+
+        private val TAG = "BezierCurveView"
+
+
+        private lateinit var bezierCurvePaint: Paint
+        private lateinit var pointPaint: Paint
+        private lateinit var textPaint: TextPaint
+
+        private val bezierCurveStyle = 0xff0000cc
+        private val pointStyle = 0xffcc0000
+        private val textStyle = 0xff00cc00
+
+        private var strokeWidth = 2f
+
+        private var pointNum = 10
+
+        private var unitSize = dp2px(40f)
+
+        //起点
+        private val p0 = Point(-1, 0)
+        //控制点
+        private val p1 = Point(1, -1)
+        //终点
+        private val p2 = Point(2, 2)
+        //端点连线的中点
+        private val anchorCenter: Point
+        //抛物线的顶点
+        private val anchor: Point
+
+        //x方向的基向量
+        private val baseX: Point
+        //y方向的基向量
+        private val baseY: Point
+
+        //变换矩阵
+        private val matrix: Matrix
+
+        init {
+            //端点连线的中点
+            anchorCenter = Point((p0.x + p2.x) * 0.5, (p0.y + p2.y) * 0.5)//(0,1)
+            //抛物线的顶点
+            anchor = Point((anchorCenter.x + p1.x) * 0.5, (anchorCenter.y + p1.y) * 0.5)//(0,0)
+
+            //x方向的基向量
+            baseX = Point(p2.x - anchorCenter.x, p2.y - anchorCenter.y)//(1,0)
+            //y方向的基向量
+            baseY = Point(anchorCenter.x - anchor.x, anchorCenter.y - anchor.y)//(1,1)
+//            baseY=Point(0,1)
+            //变换矩阵
+//            matrix = Matrix(
+//                baseX.x, baseX.y, anchor.x,
+//                baseY.x, baseY.y, anchor.y
+//            )
+            matrix = Matrix(
+                1.5f, 1f, 0.75f,
+                -0.25f, 1f, 0f
+            )
+        }
+
+        constructor(context: Context?) : this(context, null)
+
+        constructor(context: Context?, attributeSet: AttributeSet?) : this(context, attributeSet, 0)
+
+        constructor(context: Context?, attributeSet: AttributeSet?, defStyleAttr: Int) : super(
+            context,
+            attributeSet,
+            defStyleAttr
+        ) {
+            init()
+        }
+
+        private fun init() {
+            bezierCurvePaint = Paint()
+            bezierCurvePaint.isAntiAlias = true
+            bezierCurvePaint.style = Paint.Style.STROKE
+            bezierCurvePaint.strokeWidth = dp2px(strokeWidth)
+            bezierCurvePaint.color = bezierCurveStyle.toInt()
+
+            pointPaint = Paint()
+            pointPaint.isAntiAlias = true
+            pointPaint.color = pointStyle.toInt()
+
+            textPaint = TextPaint()
+            textPaint.isAntiAlias = true
+            textPaint.color = textStyle.toInt()
+        }
+
+        override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
+            super.onLayout(changed, left, top, right, bottom)
+            unitSize =
+                min(
+                    width / max(abs(p0.x - p2.x), abs(p0.x - p1.x), abs(p1.x - p2.x)),
+                    height / max(abs(p0.y - p2.y), abs(p0.y - p1.y), abs(p1.y - p2.y))
+                )
+        }
+
+        override fun onDraw(canvas: Canvas) {
+            super.onDraw(canvas)
+            onDrawBezierCurve(canvas)
+        }
+
+        private fun onDrawBezierCurve(canvas: Canvas) {
+            //把点转换到屏幕上
+//            val screenCenter = Point(width * 0.5, height * 0.5)
+            val screenCenter = Point(width * 0.5, height * 0.5)
+            val screenP0 = toScreen(p0, unitSize, screenCenter)
+            val screenP1 = toScreen(p1, unitSize, screenCenter)
+            val screenP2 = toScreen(p2, unitSize, screenCenter)
+            //绘制曲线
+            val bezierPath = Path()
+            bezierPath.moveTo(screenP0.x, screenP0.y)
+            bezierPath.quadTo(screenP1.x, screenP1.y, screenP2.x, screenP2.y)
+            canvas.drawPath(bezierPath, bezierCurvePaint)
+            //绘制点
+            val radius = dp2px(2f)
+            for (i in -pointNum ..pointNum ) {
+                val xValue = i / 10f
+                val yValue = xValue * xValue//y=x^2
+                Log.i(TAG,"(x,y):($xValue,$yValue)")
+                val screenPoint = toScreen(matrix.transfromPoint(Point(xValue, yValue)), unitSize, screenCenter)
+                canvas.drawCircle(screenPoint.x, screenPoint.y, radius, pointPaint)
+            }
+        }
+
+        /**
+         * 将坐标转换到屏幕上
+         * @param transformPoint 要转换的点
+         * @param unitSize 转换单位
+         * @param origin 转换坐标系原点
+         */
+        private fun toScreen(
+            transformPoint: Point,
+            unitSize: Float,
+            origin: Point = Point()
+        ): Point {
+            return Point(
+                origin.x + transformPoint.x * unitSize,
+                origin.y + transformPoint.y * unitSize
+            )
+        }
+    }
 }
