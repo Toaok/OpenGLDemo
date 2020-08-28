@@ -145,18 +145,16 @@ class CurveIntersectionView : View {
                 abs(p1.y - p2.y)
             ) * unitSize*/) * 0.5
         )
+
+        //绘制曲线
         bezierCurve.unitSize = this.unitSize
         bezierCurve.origin = screenCenter
         bezierCurve.draw(canvas, linePaint)
 
-        val screenLineP0 = toScreen(lineP0, unitSize, screenCenter)
-        val screenLineP1 = toScreen(lineP1, unitSize, screenCenter)
-
         //绘制直线
-        val linePath = Path()
-        linePath.moveTo(screenLineP0.x, screenLineP0.y)
-        linePath.lineTo(screenLineP1.x, screenLineP1.y)
-        canvas.drawPath(linePath, linePaint)
+        line.unitSize = this.unitSize
+        line.origin = screenCenter
+        line.draw(canvas, linePaint)
         //绘制交点
         val radius = dp2px(2f)
         for (i in 0..intersections.size - 1) {
