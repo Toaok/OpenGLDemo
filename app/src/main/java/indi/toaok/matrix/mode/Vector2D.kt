@@ -1,10 +1,11 @@
-package indi.toaok.matrix
+package indi.toaok.matrix.mode
 
 import kotlin.math.sqrt
 
 class Vector2D(var x: Float, var y: Float) {
     constructor() : this(0f, 0f)
     constructor(x: Int = 0, y: Int = 0) : this(x.toFloat(), y.toFloat())
+    constructor(x: Double = 0.0, y: Double = 0.0) : this(x.toFloat(), y.toFloat())
 
     fun clone(): Vector2D {
         return Vector2D(this.x, this.y)

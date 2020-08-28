@@ -1,4 +1,4 @@
-package indi.toaok.matrix
+package indi.toaok.matrix.mode
 
 
 data class Point(var x: Float, var y: Float) {

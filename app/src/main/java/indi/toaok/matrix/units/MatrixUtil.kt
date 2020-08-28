@@ -1,5 +1,6 @@
-package indi.toaok.matrix
+package indi.toaok.matrix.units
 
+import indi.toaok.matrix.mode.Matrix
 import kotlin.math.cos
 import kotlin.math.sin
 

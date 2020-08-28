@@ -1,5 +1,10 @@
-package indi.toaok.matrix
+package indi.toaok.matrix.mode
 
+import indi.toaok.matrix.mode.Point
+
+/**
+ * 一个矩阵类，做一些常用的矩阵运算
+ */
 class Matrix(
     var a: Float = 1f, var c: Float = 0f, var tx: Float = 0f,
     var b: Float = 0f, var d: Float = 1f, var ty: Float = 0f
