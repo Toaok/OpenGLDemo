@@ -4,7 +4,7 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Path
 import android.util.Log
-import indi.toaok.matrix.mode.Point
+import kotlin.math.sqrt
 
 /**
  * 一个直线类，主要根据两个点计算直线一般公式的系数
@@ -12,13 +12,13 @@ import indi.toaok.matrix.mode.Point
  */
 class Line(val p0: Point, val p1: Point) {
     private val TAG = "line"
-    var A:Float
-    var B:Float
-    var C:Float
+    var A: Float
+    var B: Float
+    var C: Float
 
 
     //单位大小
-    var unitSize= 40f
+    var unitSize = 40f
 
     //原点
     var origin: Point = Point()
@@ -47,7 +47,7 @@ class Line(val p0: Point, val p1: Point) {
         Log.i(TAG, "line:$lineEquation")
     }
 
-    fun draw(canvas: Canvas, paint: Paint){
+    fun draw(canvas: Canvas, paint: Paint) {
         val screenP0 = toScreen(p0)
         val screenP1 = toScreen(p1)
         //绘制曲线
@@ -59,6 +59,43 @@ class Line(val p0: Point, val p1: Point) {
     }
 
     /**
+     * 和曲线的交点
+     */
+    fun whitBezierIntersection(bezierCurve: BezierCurve2D): ArrayList<Point> {
+        //交点
+        val intersections = ArrayList<Point>()
+        //基向量矩阵变换后得到的直线ABC系数
+        val convertedLineA = A * bezierCurve.matrix.a + B * bezierCurve.matrix.b
+        val convertedLineB = A * bezierCurve.matrix.c + B * bezierCurve.matrix.d
+        val convertedLineC =
+            A * bezierCurve.matrix.tx + B * bezierCurve.matrix.ty + C
+
+        //接着求根公式
+        val delta = convertedLineA * convertedLineA - 4 * convertedLineB * convertedLineC
+        Log.i(TAG, "delta:$delta")
+        if (convertedLineB != 0f && delta >= 0) {
+            val x1 = (-convertedLineA + sqrt(delta)) / 2 / convertedLineB
+            val y1 = x1 * x1
+            val x2 = (-convertedLineA - sqrt(delta)) / 2 / convertedLineB
+            val y2 = x2 * x2
+            val intersection1 = Point(x1, y1)
+            val intersection2 = Point(x2, y2)
+            if (bezierCurve.isOnLine(intersection1)) {
+                intersections.add(bezierCurve.matrix.transfromPoint(intersection1))
+            }
+            if (bezierCurve.isOnLine(intersection2)) {
+                intersections.add(bezierCurve.matrix.transfromPoint(intersection2))
+            }
+        } else if (convertedLineA != 0f) {
+            val x = -convertedLineC / convertedLineA
+            val y = x * x
+            intersections.add(bezierCurve.matrix.transfromPoint(Point(x, y)))
+        }
+        return intersections
+    }
+
+
+    /**
      * 将坐标转换到屏幕上
      * @param transformPoint 要转换的点
      * @param unitSize 转换单位
@@ -66,7 +103,7 @@ class Line(val p0: Point, val p1: Point) {
      */
     private fun toScreen(
         transformPoint: Point,
-        unitSize: Float=this.unitSize,
+        unitSize: Float = this.unitSize,
         origin: Point = this.origin
     ): Point {
         return Point(

@@ -3,7 +3,6 @@ package indi.toaok.matrix.weight
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
-import android.graphics.Path
 import android.text.TextPaint
 import android.util.AttributeSet
 import android.util.Log
@@ -38,50 +37,22 @@ class CurveIntersectionView : View {
     private val lineP1 = Point(4.0, 14 / 5.0)
     private val line = Line(lineP0, lineP1)
 
-    //起点
-    private val p0 = Point(0, -1)
-    //控制点
-    private val p1 = Point(1, 2)
-    //终点
-    private val p2 = Point(2, 5)
     //二阶贝塞尔曲线
-    private val bezierCurve = BezierCurve2D(p0, p1, p2)
+    private val p00 = Point(-1, -1)//起点
+    private val p01 = Point(2, 2)//控制点
+    private val p02 = Point(1.0, -0.5) //终点
+    private val bezierCurve0 = BezierCurve2D(p00, p01, p02)
 
+    private val p10 = Point(3.0, -0.5)//起点
+    private val p11 = Point(-3, 2)//控制点
+    private val p12 = Point(2, -1) //终点
+    private val bezierCurve1 = BezierCurve2D(p10, p11, p12)
     //交点
     private val intersections = ArrayList<Point>()
 
     init {
-        lineWhitBezierIntersection()
-    }
-
-    private fun lineWhitBezierIntersection() {
-        //基向量矩阵变换后得到的直线ABC系数
-        val convertedLineA = line.A * bezierCurve.matrix.a + line.B * bezierCurve.matrix.b
-        val convertedLineB = line.A * bezierCurve.matrix.c + line.B * bezierCurve.matrix.d
-        val convertedLineC =
-            line.A * bezierCurve.matrix.tx + line.B * bezierCurve.matrix.ty + line.C
-
-        //接着求根公式
-        val delta = convertedLineA * convertedLineA - 4 * convertedLineB * convertedLineC
-        Log.i(TAG, "delta:$delta")
-        if (convertedLineB != 0f && delta >= 0) {
-            val x1 = (-convertedLineA + sqrt(delta)) / 2 / convertedLineB
-            val y1 = x1 * x1
-            val x2 = (-convertedLineA - sqrt(delta)) / 2 / convertedLineB
-            val y2 = x2 * x2
-            val intersection1 = Point(x1, y1)
-            val intersection2 = Point(x2, y2)
-            if (isOnLine(intersection1)) {
-                intersections.add(bezierCurve.matrix.transfromPoint(intersection1))
-            }
-            if (isOnLine(intersection2)) {
-                intersections.add(bezierCurve.matrix.transfromPoint(intersection2))
-            }
-        } else if (convertedLineA != 0f) {
-            val x = -convertedLineC / convertedLineA
-            val y = x * x
-            intersections.add(bezierCurve.matrix.transfromPoint(Point(x, y)))
-        }
+        intersections.addAll(line.whitBezierIntersection(bezierCurve0))
+        intersections.addAll(line.whitBezierIntersection(bezierCurve1))
     }
 
     constructor(context: Context?) : this(context, null)
@@ -114,19 +85,33 @@ class CurveIntersectionView : View {
 
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
         super.onLayout(changed, left, top, right, bottom)
-        unitSize =
+        unitSize = min(
             min(
                 width / max(
-                    abs(p0.x - p2.x),
-                    abs(p0.x - p1.x),
-                    abs(p1.x - p2.x)
+                    abs(p00.x - p02.x),
+                    abs(p00.x - p01.x),
+                    abs(p01.x - p02.x)
                 ),
                 height / max(
-                    abs(p0.y - p2.y),
-                    abs(p0.y - p1.y),
-                    abs(p1.y - p2.y)
+                    abs(p00.y - p02.y),
+                    abs(p00.y - p01.y),
+                    abs(p01.y - p02.y)
                 )
+            ), min(
+                width / max(
+                    abs(p10.x - p12.x),
+                    abs(p10.x - p11.x),
+                    abs(p11.x - p12.x)
+                ),
+                height / max(
+                    abs(p10.y - p12.y),
+                    abs(p10.y - p11.y),
+                    abs(p11.y - p12.y)
+                )
+
             )
+        )
+
     }
 
     override fun onDraw(canvas: Canvas) {
@@ -140,24 +125,31 @@ class CurveIntersectionView : View {
         val screenCenter = Point(
             width * 0.5,
             (height /*+ max(
-                abs(p0.y - p1.y),
-                abs(p0.y - p2.y),
-                abs(p1.y - p2.y)
+                abs(p00.y - p01.y),
+                abs(p00.y - p02.y),
+                abs(p01.y - p02.y)
             ) * unitSize*/) * 0.5
         )
 
         //绘制曲线
-        bezierCurve.unitSize = this.unitSize
-        bezierCurve.origin = screenCenter
-        bezierCurve.draw(canvas, linePaint)
+        bezierCurve0.unitSize = this.unitSize
+        bezierCurve0.origin = screenCenter
+        bezierCurve0.draw(canvas, linePaint)
+
+        bezierCurve1.unitSize = this.unitSize
+        bezierCurve1.origin = screenCenter
+        bezierCurve1.draw(canvas, linePaint)
 
         //绘制直线
         line.unitSize = this.unitSize
         line.origin = screenCenter
         line.draw(canvas, linePaint)
+
+
+
         //绘制交点
         val radius = dp2px(2f)
-        for (i in 0..intersections.size - 1) {
+        for (i in 0 until intersections.size) {
             Log.i(TAG, "(x,y):(${intersections[i].x},${intersections[i].y})")
             val screenPoint =
                 toScreen(intersections[i], unitSize, screenCenter)
@@ -180,10 +172,5 @@ class CurveIntersectionView : View {
             origin.x + transformPoint.x * unitSize,
             origin.y - transformPoint.y * unitSize
         )
-    }
-
-    //是否在曲线上
-    private fun isOnLine(point: Point): Boolean {
-        return point.x > -1 && point.x < 1 && point.y < 1
     }
 }
