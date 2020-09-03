@@ -3,14 +3,41 @@ package indi.toaok.matrix.mode
 import java.lang.Math.pow
 import kotlin.math.*
 
+
 /**
  * 复数类 a+bi
  */
 class ComplexNum(
-    val real: Double,//复数的实部
-    val image: Double//复数的虚部
+    val real: Double = 0.0,//复数的实部
+    val image: Double = 0.0//复数的虚部
 ) {
+    companion object {
 
+        /**
+         * OMEGA是根为1，辅角主值等于120度的复数，它是1开三次方的结果在解3次4次方程中非常常用
+         * OMEGA就是希腊字母里最像w的那个
+         */
+        val OMEGA = ComplexNum(1.0 / 2.0, sqrt(3.0) / 2.0)
+
+        /**
+         * 理论上OMEGA的平方可以用OMEGA相乘得到，但由于容易产生浮点误差，加上数值固定，因此也直接做成常量
+         */
+        val OMEGA_SQUARE = ComplexNum(-1.0 / 2.0, sqrt(3.0) / 2.0)
+
+        /**
+         * OMEGA的三次方恰好等于实数1
+         */
+        val OMEGA_CUBIC = ComplexNum(-1.0, 0.0)
+        /**
+         * OMEGA的0次方
+         */
+        val OMEGA_ZERO = ComplexNum(1.0, 0.0)
+
+        /**
+         * 虚数单位i
+         */
+        val I = ComplexNum(0.0, 1.0)
+    }
 
     /**
      * 复数的辅角主值（复数所在点与坐标连线跟水瓶线的夹角），以弧度为单位
@@ -160,4 +187,28 @@ class ComplexNum(
         }
         return vec
     }
+
+    /**
+     * 返回当前复数的一个副本
+     */
+    fun colne(): ComplexNum {
+        return ComplexNum(this.real, this.image)
+    }
+
+    override fun toString(): String {
+        val realStr = if (this.real != 0.0 || this.image == 0.0) "$real" else ""
+        val imageStr = if (this.image == 0.0) {
+            ""
+        } else if (this.image < 0) {
+            "${this.image}"
+        } else {
+            if (realStr != "") {
+                "+"
+            } else {
+                ""
+            } + "${this.image}i"
+        }
+        return realStr + imageStr
+    }
+
 }
