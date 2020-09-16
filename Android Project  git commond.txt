@@ -1,0 +1,32 @@
+﻿//获取项目
+
+//提交代码
+1.command
+2.sign off
+3.git push origin HEAD:refs/for/xxxx
+
+//解锁bootloader
+1.首先需要打开开发者模式中的OEM unlocking开关
+2.adb reboot bootloader
+3.fastboot flashing unlock
+4.fastboot getvar unlocked
+5.选这解锁选项
+
+//卸载系统预装软件 
+adb root
+adb disable-verity
+adb reboot
+
+adb root
+adb remount
+adb shell
+
+cd /system/priv-app/
+//moto cd system/product/priv-app 
+rm -fr ZuiGallery
+exit
+
+adb reboot
+
+//烧鸡
+adb reboot edl
