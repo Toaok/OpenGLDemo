@@ -197,12 +197,10 @@ class ComplexNum(
 
     override fun toString(): String {
         val realStr = if (this.real != 0.0 || this.image == 0.0) "$real" else ""
-        val imageStr = if (this.image == 0.0) {
-            ""
-        } else if (this.image < 0) {
-            "${this.image}"
-        } else {
-            if (realStr != "") {
+        val imageStr = when {
+            this.image == 0.0 -> ""
+            this.image < 0 -> "${this.image}"
+            else -> if (realStr != "") {
                 "+"
             } else {
                 ""
@@ -211,4 +209,27 @@ class ComplexNum(
         return realStr + imageStr
     }
 
+    /**
+     * 任意整数次方的运算
+     */
+    fun pow(k: Int): ComplexNum {
+        var c = colne()
+        when {
+            k > 0 -> {
+                for (i in 1..k) {
+                    c = c.multiply(this)
+                }
+            }
+            k == 0 -> {
+                c = ComplexNum(1.0)
+            }
+            k < 0 -> {
+                for (i in 1..k) {
+                    c = c.multiply(this)
+                }
+                c = ComplexNum(1.0).divide(c)
+            }
+        }
+        return c
+    }
 }

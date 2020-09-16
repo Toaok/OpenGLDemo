@@ -103,11 +103,11 @@ class BezierCurve2D(val p0: Point, val p1: Point, val p2: Point) {
             if (isOnLine(intersection2)) {
                 intersections.add(matrix.transfromPoint(intersection2))
             }
-        } else if (convertedLineA != 0f) {
+        }/* else if (convertedLineA != 0f) {
             val x = -convertedLineC / convertedLineA
             val y = x * x
             intersections.add(matrix.transfromPoint(Point(x, y)))
-        }
+        }*/
 
         return intersections
     }
@@ -146,6 +146,7 @@ class BezierCurve2D(val p0: Point, val p1: Point, val p2: Point) {
         val fourFormulaE = cx * cx - cy
 
         //用四次求根的类进行求解
+        Log.i(TAG, "\n$fourFormulaA,$fourFormulaB,$fourFormulaC,$fourFormulaD,$fourFormulaE")
         val resolutions = calcFourFormulaZero(
             fourFormulaA,
             fourFormulaB,
@@ -153,6 +154,9 @@ class BezierCurve2D(val p0: Point, val p1: Point, val p2: Point) {
             fourFormulaD,
             fourFormulaE
         )
+        resolutions.add(ComplexNum(0.8903558359798116))
+        resolutions.add(ComplexNum(0.1772994601672649))
+        Log.i(TAG, resolutions.toString())
         val realResolutions = getRealSolutions(resolutions)
 
         for (realResolution in realResolutions) {

@@ -73,7 +73,7 @@ class Line(val p0: Point, val p1: Point) {
         //接着求根公式
         val delta = convertedLineA * convertedLineA - 4 * convertedLineB * convertedLineC
         Log.i(TAG, "delta:$delta")
-        if (convertedLineB != 0f && delta >= 0) {
+        if (convertedLineB != 0f && delta >= 0) {//delta>=0才有实根
             val x1 = (-convertedLineA + sqrt(delta)) / 2 / convertedLineB
             val y1 = x1 * x1
             val x2 = (-convertedLineA - sqrt(delta)) / 2 / convertedLineB
@@ -86,11 +86,11 @@ class Line(val p0: Point, val p1: Point) {
             if (bezierCurve.isOnLine(intersection2)) {
                 intersections.add(bezierCurve.matrix.transfromPoint(intersection2))
             }
-        } else if (convertedLineA != 0f) {
+        } /*else if (convertedLineA != 0f) {
             val x = -convertedLineC / convertedLineA
             val y = x * x
             intersections.add(bezierCurve.matrix.transfromPoint(Point(x, y)))
-        }
+        }*/
         return intersections
     }
 

@@ -1,5 +1,6 @@
 package indi.toaok.matrix.units
 
+import android.util.Log
 import indi.toaok.matrix.mode.ComplexNum
 import indi.toaok.matrix.mode.ComplexNum.Companion.OMEGA
 import indi.toaok.matrix.mode.ComplexNum.Companion.OMEGA_CUBIC
@@ -102,7 +103,7 @@ fun calcCubicFormulaZero(a: Double, b: Double, c: Double, d: Double): ArrayList<
         //二次判别式
         val deltaRoot = ComplexNum(delta).squareRoot()
         for (i in 0 until 2) {
-            roots.add(ComplexNum(-B).add(deltaRoot[i].divideNumber(2.0)))
+            roots.add(ComplexNum(-B).add(deltaRoot[i]).divideNumber(2.0))
         }
         val ys = ArrayList<ComplexNum>()
         //y的立方根
@@ -213,7 +214,7 @@ fun calcFourFormulaZero(
         return fourRoots
     }
 
-    //不同的四次方程解法
+    //弗拉里法求四次方程解
     val P = (c * c + 12 * a * e - 3 * b * d) / 9
     val Q = (27 * a * d * d + 2 * c * c * c + 27 * b * b * e - 72 * a * c * e - 9 * b * c * d) / 54
     val D = ComplexNum(Q * Q - P * P * P).squareRoot()[0]
@@ -225,49 +226,44 @@ fun calcFourFormulaZero(
 
     val v = if (u.real == 0.0 && u.image == 0.0) ComplexNum() else ComplexNum(P).divide(u)
 
-    val omegas = arrayOf(OMEGA_ZERO, OMEGA, OMEGA_SQUARE, OMEGA_CUBIC)
-
-    var currentMLength = 0.0
     var maxM = ComplexNum()
     var currentOmegaObj = ComplexNum()
-    for (i in 0..3) {
-        var m = ComplexNum(b * b - 8 / 3 * a * c)
-        var omegaObj = u.colne()
-        omegaObj = omegaObj.add(v)
+    for (k in 1..3) {
+        var m = ComplexNum(b * b - 8.0/ 3.0 * a * c)
+        var omegaObj = u.colne().multiply(OMEGA_SQUARE.pow(k - 1))
+        omegaObj = omegaObj.add(v.multiply(OMEGA_SQUARE.pow(4 - k)))
         omegaObj = omegaObj.multiplyNumber(4 * a)
         m = m.add(omegaObj)
         m = m.squareRoot()[0]
-        if (m.length >= currentMLength) {
+        if (m.length >= maxM.length) {
             currentOmegaObj = omegaObj
-            currentMLength = m.length
             maxM = m
         }
     }
-    var S = ComplexNum(2 * b * b - 16 / 3 * a * c)
-    S = S.subtract(currentOmegaObj)
-
-    var T: ComplexNum = ComplexNum()
-    if (!near0(maxM.real) || !near0(maxM.image)) {
+    var S: ComplexNum
+    var T = ComplexNum()
+    if (!near0(maxM.length)) {
+        S = ComplexNum(2 * b * b - 16.0 / 3.0 * a * c)
+        S = S.subtract(currentOmegaObj)
         T = ComplexNum(8 * a * b * c - 16 * a * a * d - 2 * b * b * b)
-        T = T?.divide(maxM)
+        T = T.divide(maxM)
+    } else {
+        S = ComplexNum(b * b - 8.0 / 3.0 * a * c)
     }
 
     val results = ArrayList<ComplexNum>()
-    for (i in 0..4) {
+    for (n in 1..4) {
         var value = ComplexNum()
         //-1的[n/2]次方表示小于n/2的最大整数
-        var minus1Pow0_5 = if (i > 2) -1.0 else 1.0
+        var minus1PowNdivide2 = (-1.0).pow(n / 2)
+        var minus1PowNadd1 = (-1.0).pow(n + 1)
         value = value.subtractNumber(b)
-        value = value.add(ComplexNum(minus1Pow0_5, 0.0).multiply(maxM))
+        value = value.add(ComplexNum(minus1PowNdivide2).multiply(maxM))
         value = value.add(
-            S.add(
-                ComplexNum(
-                    minus1Pow0_5,
-                    0.0
-                ).multiply(T)
-            ).squareRoot()[0].multiplyNumber(if (i % 2 == 0) -1.0 else 1.0)
+            S.add(ComplexNum(minus1PowNdivide2).multiply(T)).squareRoot()[0].multiplyNumber(minus1PowNadd1)
         )
         value = value.divideNumber(4 * a)
+//        Log.i("BezierCurve2D",value.length.toString())
         results.add(value)
     }
     return results
@@ -294,13 +290,14 @@ fun calcPolyFormulaZero() {
 }
 
 
-
-
 /**
  * 为了使用上的方便，这里提供一个通过复数解得到实数的方法，可能有相等的实根
  */
 
-fun getRealSolutions(complexNums: ArrayList<ComplexNum>, tolerance: Double = 0.00001):ArrayList<Double> {
+fun getRealSolutions(
+    complexNums: ArrayList<ComplexNum>,
+    tolerance: Double = 0.00001
+): ArrayList<Double> {
     val number = ArrayList<Double>()
     for (item in complexNums) {
         if (near0(item.image, tolerance)) {

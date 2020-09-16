@@ -1,5 +1,6 @@
 package indi.toaok.opengl
 
+import indi.toaok.matrix.units.calcFourFormulaZero
 import org.junit.Test
 
 import org.junit.Assert.*
@@ -12,6 +13,6 @@ import org.junit.Assert.*
 class ExampleUnitTest {
     @Test
     fun addition_isCorrect() {
-        assertEquals(4, 2 + 2)
+        print(calcFourFormulaZero(1.0,-2.0,4.0,-4.0,-8.0))
     }
 }
