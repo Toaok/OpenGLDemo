@@ -112,7 +112,7 @@ class ComplexNum(
      * 复数相乘(运算法则是利用多项式乘法进行展开得到)
      * @param complexNum 要与其相乘的复数
      */
-    fun mutiply(complexNum: ComplexNum): ComplexNum {
+    fun multiply(complexNum: ComplexNum): ComplexNum {
         return ComplexNum(
             this.real * complexNum.real - this.image * complexNum.image,
             this.image * complexNum.real + this.real * complexNum.image
@@ -169,7 +169,7 @@ class ComplexNum(
      * 开任意整数次方的运算
      * @param times
      */
-    private fun getRoot(times: Int): ArrayList<ComplexNum> {
+    fun getRoot(times: Int): ArrayList<ComplexNum> {
         val vec = ArrayList<ComplexNum>()
         //复数开发运算的原理是把辅角根据次数进行平分
         var degree = this.degree
@@ -177,12 +177,12 @@ class ComplexNum(
         //然后多个方根平分360度，所以需要算出每个方根之间的辅角间隔
         val degreeUnit = 360 / times
         //复数长度（模）直接开方即可
-        val lengthRoot = pow(this.length, 1.0 / times)
-        for (i in 0..times) {
-            val currentDegree = degree + 1 * degreeUnit
+        val lengthRoot = length.pow(1.0 / times)
+        for (i in 0 until times) {
+            val currentDegree = degree + i * degreeUnit
             val currentAngle = currentDegree * PI / 180
             val cos = cos(currentAngle)
-            val sin = sin(currentDegree)
+            val sin = sin(currentAngle)
             vec.add(ComplexNum(lengthRoot * cos, lengthRoot * sin))
         }
         return vec

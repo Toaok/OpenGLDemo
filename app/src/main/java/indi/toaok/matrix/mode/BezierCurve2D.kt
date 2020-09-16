@@ -4,6 +4,9 @@ import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.Path
 import android.util.Log
+import indi.toaok.matrix.units.calcFourFormulaZero
+import indi.toaok.matrix.units.getRealSolutions
+import kotlin.math.abs
 import kotlin.math.sqrt
 
 /**
@@ -115,39 +118,56 @@ class BezierCurve2D(val p0: Point, val p1: Point, val p2: Point) {
     fun withBezierCurveIntersection(bezierCurve: BezierCurve2D): ArrayList<Point> {
         //交点
         val intersections = ArrayList<Point>()
+        //当前曲线矩阵的逆矩阵
+        val matrixInvert = matrix.invert()
+        //第一条(当前)贝塞尔曲线经过matrix基向量矩阵的逆矩阵变换后得到的一定是Y=X^2,
+        //现在我们把两条曲线都进行matrix的你变换，则第一条（当前）将变成Y=X^2,
+        //而另一条则可以通过变换控制点的坐标重新生成，无需带入方程中进行计算
+        val transformedP0 = matrixInvert.transfromPoint(bezierCurve.p0)
+        val transformedP1 = matrixInvert.transfromPoint(bezierCurve.p1)
+        val transformedP2 = matrixInvert.transfromPoint(bezierCurve.p2)
+
         //贝塞尔曲线x分量的三个系数
-
+        val ax = transformedP0.x - 2 * transformedP1.x + transformedP2.x
+        val bx = 2 * transformedP1.x - 2 * transformedP0.x
+        val cx = transformedP0.x
         //贝塞尔曲线y分量的三个系数
+        val ay = transformedP0.y - 2 * transformedP1.y + transformedP2.y
+        val by = 2 * transformedP1.y - 2 * transformedP0.y
+        val cy = transformedP0.y
 
+        //由Y=x^2和X=ax*t^2+bx*t+cx和Y=ay*t^2+by*t+cy,得到
+        //ay*t^2+by*t+cy=(ax*t^2+bx*t+cx)^2
+        //展开化简将得到一个四次方程，系数如下
+        val fourFormulaA = ax * ax
+        val fourFormulaB = 2 * ax * bx
+        val fourFormulaC = bx * bx + 2 * ax * cx - ay
+        val fourFormulaD = 2 * bx * cx - by
+        val fourFormulaE = cx * cx - cy
 
-        //基向量矩阵变换后得到的直线ABC系数
-        val convertedLineA = line.A * matrix.a + line.B * matrix.b
-        val convertedLineB = line.A * matrix.c + line.B * matrix.d
-        val convertedLineC =
-            line.A * matrix.tx + line.B * matrix.ty + line.C
+        //用四次求根的类进行求解
+        val resolutions = calcFourFormulaZero(
+            fourFormulaA,
+            fourFormulaB,
+            fourFormulaC,
+            fourFormulaD,
+            fourFormulaE
+        )
+        val realResolutions = getRealSolutions(resolutions)
 
-        //接着求根公式
-        val delta = convertedLineA * convertedLineA - 4 * convertedLineB * convertedLineC
-        Log.i(TAG, "delta:$delta")
-        if (convertedLineB != 0f && delta >= 0) {
-            val x1 = (-convertedLineA + sqrt(delta)) / 2 / convertedLineB
-            val y1 = x1 * x1
-            val x2 = (-convertedLineA - sqrt(delta)) / 2 / convertedLineB
-            val y2 = x2 * x2
-            val intersection1 = Point(x1, y1)
-            val intersection2 = Point(x2, y2)
-            if (isOnLine(intersection1)) {
-                intersections.add(matrix.transfromPoint(intersection1))
+        for (realResolution in realResolutions) {
+            if (realResolution in 0.0..1.0) {//是否在第一条曲线上
+                //算出在基向量矩阵逆变换后的交点
+                val p = Point()
+                p.x = (ax * realResolution * realResolution + bx * realResolution + cx).toFloat()
+                p.y = (ay * realResolution * realResolution + by * realResolution + cy).toFloat()
+                //第二条曲线在基向量逆矩阵变换后为Y=X^2,X的取值范围为-1到1
+                if (p.x in -1f..1f) {
+                    //因为这个交点是方程在基向量逆变换后求得，所以要执行基向量矩阵的原始变换才能让结果恢复到变换前
+                    intersections.add(matrix.transfromPoint(p))
+                }
             }
-            if (isOnLine(intersection2)) {
-                intersections.add(matrix.transfromPoint(intersection2))
-            }
-        } else if (convertedLineA != 0f) {
-            val x = -convertedLineC / convertedLineA
-            val y = x * x
-            intersections.add(matrix.transfromPoint(Point(x, y)))
         }
-
         return intersections
     }
 

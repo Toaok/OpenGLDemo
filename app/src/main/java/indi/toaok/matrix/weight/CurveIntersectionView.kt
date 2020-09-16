@@ -38,21 +38,22 @@ class CurveIntersectionView : View {
     private val line = Line(lineP0, lineP1)
 
     //二阶贝塞尔曲线
-    private val p00 = Point(-1, -1)//起点
-    private val p01 = Point(2, 2)//控制点
-    private val p02 = Point(1.0, -0.5) //终点
+    private val p00 = Point(-1, 1)//起点
+    private val p01 = Point(0, -1)//控制点
+    private val p02 = Point(1, 1) //终点
     private val bezierCurve0 = BezierCurve2D(p00, p01, p02)
 
-    private val p10 = Point(3.0, -0.5)//起点
-    private val p11 = Point(-3, 2)//控制点
-    private val p12 = Point(2, -1) //终点
+    private val p10 = Point(1, 1)//起点
+    private val p11 = Point(-1, 0)//控制点
+    private val p12 = Point(1, -1) //终点
     private val bezierCurve1 = BezierCurve2D(p10, p11, p12)
     //交点
     private val intersections = ArrayList<Point>()
 
     init {
-        intersections.addAll(line.whitBezierIntersection(bezierCurve0))
-        intersections.addAll(line.whitBezierIntersection(bezierCurve1))
+        //intersections.addAll(line.whitBezierIntersection(bezierCurve0))
+        //intersections.addAll(line.whitBezierIntersection(bezierCurve1))
+        intersections.addAll(bezierCurve0.withBezierCurveIntersection(bezierCurve1))
     }
 
     constructor(context: Context?) : this(context, null)
@@ -146,13 +147,13 @@ class CurveIntersectionView : View {
         line.draw(canvas, linePaint)
 
 
-
         //绘制交点
         val radius = dp2px(2f)
-        for (i in 0 until intersections.size) {
-            Log.i(TAG, "(x,y):(${intersections[i].x},${intersections[i].y})")
+        for (intersection in intersections) {
+            Log.i(TAG, "(x,y):(${intersection.x},${intersection.y})")
             val screenPoint =
-                toScreen(intersections[i], unitSize, screenCenter)
+                toScreen(intersection, unitSize, screenCenter)
+            Log.i(TAG, "screen(x,y):(${screenPoint.x},${screenPoint.y})")
             canvas.drawCircle(screenPoint.x, screenPoint.y, radius, pointPaint)
         }
     }

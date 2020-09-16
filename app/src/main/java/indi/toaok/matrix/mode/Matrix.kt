@@ -63,13 +63,10 @@ class Matrix(
         val tx = this.tx
         val ty = this.ty
         val D = a * d - b * c
-        this.a = d / D
-        this.b = -b / D
-        this.c = -c / D
-        this.d = a / D
-        this.tx = (c * ty - d * tx) / D
-        this.ty = (b * tx - a * ty) / D
-        return this
+        return Matrix(
+            a = d / D, b = -b / D,tx = (c * ty - d * tx) / D,
+            c = -c / D, d = a / D,ty = (b * tx - a * ty) / D
+        )
     }
 
     /**
