@@ -14,7 +14,8 @@ import kotlin.math.sqrt
  * x(t)=(1-t)^2 * x0 + 2t(1-t) * x1 + t^2 * x2
  * y(t)=(1-t)^2 * y0 + 2t(1-t) * y1 + t^2 * y2
  * ==>> (P0-2P1+P2)*t^2 + (2*P1-2*P0)*t + P0
- * 一个二阶贝塞尔曲线类，主计算曲线的基向量和变换矩阵
+ * 一个二阶贝塞尔曲线类，主要计算曲线的基向量和变换矩阵
+ * 以及和其他曲线的交点
  */
 class BezierCurve2D(val p0: Point, val p1: Point, val p2: Point) {
 

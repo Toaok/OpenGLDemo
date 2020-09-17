@@ -125,15 +125,13 @@ fun calcCubicFormulaZero(a: Double, b: Double, c: Double, d: Double): ArrayList<
         results.add(ComplexNum(-b / a + K, 0.5 * K))
     } else if (delta < 0) {
         //盛金公式上说这种情况下A必须大于0，所以就没用复数来搞了
-        val T = (2 * A * b - 3 * a * B) / 2 * sqrt(A * A * A)
+        val T = (2 * A * b - 3 * a * B) / (2 * sqrt(A * A * A))
         val theta = acos(T)
         val x1 = ComplexNum((-b - 2 * sqrt(A) * cos(theta / 3)) / 3 / a)
         results.add(x1)
         for (i in 0 until 2) {
             val x = ComplexNum(
-                -b + sqrt(A) * (cos(theta / 3) + (if (i == 0) 1 else -1) * sin(theta / 3) * sqrt(
-                    3.0
-                )) / 3 / a
+                (-b + sqrt(A) * (cos(theta / 3) + (-1.0).pow(i) * sin(theta / 3) * sqrt(3.0))) / 3 / a
             )
             results.add(x)
         }
