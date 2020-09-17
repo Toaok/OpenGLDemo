@@ -1,11 +1,6 @@
 package indi.toaok.matrix.units
 
-import android.util.Log
 import indi.toaok.matrix.mode.ComplexNum
-import indi.toaok.matrix.mode.ComplexNum.Companion.OMEGA
-import indi.toaok.matrix.mode.ComplexNum.Companion.OMEGA_CUBIC
-import indi.toaok.matrix.mode.ComplexNum.Companion.OMEGA_SQUARE
-import indi.toaok.matrix.mode.ComplexNum.Companion.OMEGA_ZERO
 import kotlin.math.*
 
 /**
@@ -85,7 +80,6 @@ fun calcCubicFormulaZero(a: Double, b: Double, c: Double, d: Double): ArrayList<
         squareRoots.add(ComplexNum())
         return squareRoots
     }
-    //
     val A = b * b - 3 * a * c
     val B = b * c - 9 * a * d
     val C = c * c - 3 * b * d
@@ -258,6 +252,7 @@ fun calcFourFormulaZero(
 
 /**
  * 计算多项式方程的解
+ * TODO
  */
 fun calcPolyFormulaZero() {
     val currentArgs = arrayOf<Int>()

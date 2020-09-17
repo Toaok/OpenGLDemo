@@ -154,8 +154,6 @@ class BezierCurve2D(val p0: Point, val p1: Point, val p2: Point) {
             fourFormulaD,
             fourFormulaE
         )
-        resolutions.add(ComplexNum(0.8903558359798116))
-        resolutions.add(ComplexNum(0.1772994601672649))
         Log.i(TAG, resolutions.toString())
         val realResolutions = getRealSolutions(resolutions)
 

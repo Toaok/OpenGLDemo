@@ -39,13 +39,13 @@ class CurveIntersectionView : View {
 
     //二阶贝塞尔曲线
     private val p00 = Point(-1, 1)//起点
-    private val p01 = Point(2, 2)//控制点
-    private val p02 = Point(1.0, -0.5) //终点
+    private val p01 = Point(0, 0)//控制点
+    private val p02 = Point(1.0, 1.0) //终点
     private val bezierCurve0 = BezierCurve2D(p00, p01, p02)
 
-    private val p10 = Point(3.0, -0.5)//起点
-    private val p11 = Point(-3, 2)//控制点
-    private val p12 = Point(2, -1) //终点
+    private val p10 = Point(-1, -1)//起点
+    private val p11 = Point(0, 0)//控制点
+    private val p12 = Point(1, -1) //终点
     private val bezierCurve1 = BezierCurve2D(p10, p11, p12)
     //交点
     private val intersections = ArrayList<Point>()
