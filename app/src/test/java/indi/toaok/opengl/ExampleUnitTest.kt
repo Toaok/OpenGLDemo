@@ -13,6 +13,6 @@ import org.junit.Assert.*
 class ExampleUnitTest {
     @Test
     fun addition_isCorrect() {
-        print(calcFourFormulaZero(1.0,-2.0,4.0,-4.0,-8.0))
+        print(calcFourFormulaZero(1.0,1.0,1.0,-4.0,-20.0))
     }
 }

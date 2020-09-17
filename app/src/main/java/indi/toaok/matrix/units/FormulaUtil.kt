@@ -214,58 +214,35 @@ fun calcFourFormulaZero(
         return fourRoots
     }
 
-    //弗拉里法求四次方程解
-    val P = (c * c + 12 * a * e - 3 * b * d) / 9
-    val Q = (27 * a * d * d + 2 * c * c * c + 27 * b * b * e - 72 * a * c * e - 9 * b * c * d) / 54
-    val D = ComplexNum(Q * Q - P * P * P).squareRoot()[0]
-
-    val u1 = ComplexNum(Q).add(D).cubicRoot()[0]
-    val u2 = ComplexNum(Q).subtract(D).cubicRoot()[0]
-
-    val u = if (u1.length > u2.length) u1 else u2
-
-    val v = if (u.real == 0.0 && u.image == 0.0) ComplexNum() else ComplexNum(P).divide(u)
-
-    var maxM = ComplexNum()
-    var currentOmegaObj = ComplexNum()
-    for (k in 1..3) {
-        var m = ComplexNum(b * b - 8.0/ 3.0 * a * c)
-        var omegaObj = u.colne().multiply(OMEGA_SQUARE.pow(k - 1))
-        omegaObj = omegaObj.add(v.multiply(OMEGA_SQUARE.pow(4 - k)))
-        omegaObj = omegaObj.multiplyNumber(4 * a)
-        m = m.add(omegaObj)
-        m = m.squareRoot()[0]
-        if (m.length >= maxM.length) {
-            currentOmegaObj = omegaObj
-            maxM = m
-        }
-    }
-    var S: ComplexNum
-    var T = ComplexNum()
-    if (!near0(maxM.length)) {
-        S = ComplexNum(2 * b * b - 16.0 / 3.0 * a * c)
-        S = S.subtract(currentOmegaObj)
-        T = ComplexNum(8 * a * b * c - 16 * a * a * d - 2 * b * b * b)
-        T = T.divide(maxM)
-    } else {
-        S = ComplexNum(b * b - 8.0 / 3.0 * a * c)
-    }
-
     val results = ArrayList<ComplexNum>()
-    for (n in 1..4) {
-        var value = ComplexNum()
-        //-1的[n/2]次方表示小于n/2的最大整数
-        var minus1PowNdivide2 = (-1.0).pow(n / 2)
-        var minus1PowNadd1 = (-1.0).pow(n + 1)
-        value = value.subtractNumber(b)
-        value = value.add(ComplexNum(minus1PowNdivide2).multiply(maxM))
-        value = value.add(
-            S.add(ComplexNum(minus1PowNdivide2).multiply(T)).squareRoot()[0].multiplyNumber(minus1PowNadd1)
-        )
-        value = value.divideNumber(4 * a)
-//        Log.i("BezierCurve2D",value.length.toString())
-        results.add(value)
-    }
+    //最高次项系数化为1
+    val A = 1.0
+    val B = b / a
+    val C = c / a
+    val D = d / a
+    val E = e / a
+    /**
+     * 引入变量y,M=sqrt(8*y+B*B-4*C),N=B*y-D
+     * 此方程是一下两个一元二次方程的解
+     * 2X^2+(B+M)+2*(y+N/M)=0
+     * 2X^2+(B-M)+2*(y-N/M)=0
+     */
+    //其中y是一个一元三次方程的任意实根
+    val yA = 8.0
+    val yB = -4 * C
+    val yC = -(8 * E - 2 * B * D)
+    val yD = -E * (B * B - 4 * C) - D * D
+    //根据盛金公式求得y的根
+    val yRoot = calcCubicFormulaZero(yA, yB, yC, yD)
+    //获取y的实根
+    val yRealRoot = getRealSolutions(yRoot)
+    val y = if (yRealRoot.isNotEmpty()) yRealRoot[0] else return results//如果没有实根无解
+    //求得M,N
+    val M = sqrt(8 * y + B * B - 4 * C)
+    val N = B * y - D
+    //将M,N带入一元二次方程
+    results.addAll(calcSquareFormulaZero(2.0, B + M, 2 * (y + N / M)))
+    results.addAll(calcSquareFormulaZero(2.0, B - M, 2 * (y - N / M)))
     return results
 }
 

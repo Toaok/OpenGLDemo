@@ -51,8 +51,8 @@ class CurveIntersectionView : View {
     private val intersections = ArrayList<Point>()
 
     init {
-        //intersections.addAll(line.whitBezierIntersection(bezierCurve0))
-        //intersections.addAll(line.whitBezierIntersection(bezierCurve1))
+        intersections.addAll(line.whitBezierIntersection(bezierCurve0))
+        intersections.addAll(line.whitBezierIntersection(bezierCurve1))
         intersections.addAll(bezierCurve0.withBezierCurveIntersection(bezierCurve1))
     }
 
